@@ -51,6 +51,20 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media(min-width:760px){.burger{display:none}.top nav,.top nav.open{display:flex;flex-basis:auto;margin:0;border:0;gap:6px}.top nav a{padding:8px 12px;font-size:.93rem}}
 .wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:30}
 .wa svg{width:30px;height:30px;display:block}
+.form{display:grid;gap:14px;margin-top:20px}
+.row{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.form label{display:block;font-family:system-ui,sans-serif;font-size:.88rem;color:var(--green);font-weight:600}
+.form input:not([type=checkbox]),.form select,.form textarea{display:block;width:100%;margin-top:6px;padding:12px 14px;border:1px solid #D6CABA;border-radius:12px;background:#FBF8F3;color:var(--text);font:inherit;font-size:16px;font-weight:400}
+.form input:focus,.form select:focus,.form textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+.form .chk{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:var(--text);line-height:1.45}
+.form .chk input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--green)}
+.req{color:var(--gold-text);margin-left:2px}
+.hint{margin:-6px 0 0;color:var(--muted);font-size:.88rem}
+.form button{justify-self:start;border:0;cursor:pointer;font-size:1rem;margin:0}
+.form button:disabled{opacity:.6}
+#pmsg{font-family:system-ui,sans-serif;font-size:.95rem;margin:0}
+#pmsg.ok{color:var(--green)}#pmsg.err{color:#8A2B1E}
+.note a{color:var(--green)}
 </style>
 </head>
 <body>
@@ -98,8 +112,29 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 <section id="programare">
 <h2>Programează-te</h2>
-<p>Alege ziua și ora potrivite direct în calendarul meu de pe Fresha.</p>
-<a class="btn" href="https://www.fresha.com/p/smadu-robert-4492079?share=true&pId=2678841" target="_blank" rel="noopener">Programează-te pe Fresha</a>
+<p>Completează formularul și te contactez cât de curând pentru a confirma ziua și ora. Doar numele și telefonul sunt obligatorii.</p>
+<form id="pf" class="form" novalidate>
+<input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none">
+<div class="row">
+<label>Nume<span class="req">*</span><input name="Nume" autocomplete="name"></label>
+<label>Telefon<span class="req">*</span><input name="Telefon" type="tel" inputmode="tel" autocomplete="tel"></label>
+</div>
+<div class="row">
+<label>Serviciu<select name="Serviciu"><option value="">Alege (opțional)</option><option>Kinetoterapie</option><option>Masaj</option></select></label>
+<label>Zona<select name="Zona"><option value="">Alege (opțional)</option><option>Sector 4</option><option>Sector 5</option><option>Sector 6</option><option>Ilfov</option></select></label>
+</div>
+<div class="row">
+<label>Ziua preferată<input name="Ziua" type="date"></label>
+<label>Intervalul preferat<select name="Interval"><option value="">Alege (opțional)</option><option>Dimineața</option><option>După-amiaza</option><option>Seara</option><option>Sunt flexibil</option></select></label>
+</div>
+<label>Descrie pe scurt problema<textarea name="Descriere" rows="4" maxlength="500" placeholder="Opțional"></textarea></label>
+<label class="chk"><input type="checkbox" name="Documente"><span>Am documente medicale (analize, imagistică, bilet de externare etc.)</span></label>
+<p class="hint" id="dochint" hidden>Nu le încărca aici. După ce te contactez, mi le poți trimite pe WhatsApp.</p>
+<label class="chk"><input type="checkbox" id="gdpr"><span>Sunt de acord ca datele din formular să fie folosite pentru a fi contactat în legătură cu programarea.<span class="req">*</span></span></label>
+<button class="btn" type="submit">Trimite cererea</button>
+<p id="pmsg" role="status"></p>
+</form>
+<p class="note">Preferi să vorbim direct? <a href="https://wa.me/40758192337" target="_blank" rel="noopener">Scrie-mi pe WhatsApp</a> sau <a href="tel:+40758192337" target="_blank" rel="noopener">sună-mă</a>.</p>
 </section>
 
 <section id="contact" class="contact">
@@ -129,6 +164,25 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 var b=document.querySelector('.burger'),m=document.getElementById('menu');
 b.addEventListener('click',function(){var o=m.classList.toggle('open');b.setAttribute('aria-expanded',o)});
 m.addEventListener('click',function(e){if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false')}});
+</script>
+<script>
+(function(){
+var KEY='813cda79-a1d2-4398-909e-ec4dc0be8bd5',f=document.getElementById('pf'),m=document.getElementById('pmsg'),d=f.elements['Documente'],h=document.getElementById('dochint');
+d.addEventListener('change',function(){h.hidden=!d.checked});
+var t=new Date();f.elements['Ziua'].min=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+function say(c,s){m.className=c;m.textContent=s}
+f.addEventListener('submit',function(e){
+e.preventDefault();
+var n=f.elements['Nume'].value.trim(),p=f.elements['Telefon'].value.trim();
+if(!n||!p){say('err','Te rog completează numele și telefonul.');return}
+if(!document.getElementById('gdpr').checked){say('err','Bifează acordul pentru prelucrarea datelor.');return}
+if(f.elements['botcheck'].checked)return;
+var z=f.elements['Ziua'].value;
+var data={access_key:KEY,subject:'Cerere programare Kinea',from_name:'Site Kinea',Nume:n,Telefon:p,Serviciu:f.elements['Serviciu'].value||'-',Zona:f.elements['Zona'].value||'-',Ziua:z?z.split('-').reverse().join('.'):'-',Interval:f.elements['Interval'].value||'-',Descriere:f.elements['Descriere'].value.trim()||'-','Are documente medicale':d.checked?'Da':'Nu'};
+var b=f.querySelector('button');b.disabled=true;say('','Se trimite…');
+function fail(){b.disabled=false;say('err','Nu am putut trimite cererea. Te rog scrie-mi pe WhatsApp sau sună-mă.')}
+fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)}).then(function(r){return r.json()}).then(function(j){if(j.success){f.reset();h.hidden=true;b.disabled=false;say('ok','Mulțumesc! Am primit cererea și te contactez cât de curând pentru confirmare.')}else fail()}).catch(fail)});
+})();
 </script>
 </body>
 </html>
